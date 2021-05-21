@@ -55,6 +55,11 @@ RUN pip install -U pip && \
                 flexget \
                 python-telegram-bot==12.8 \
                 baidu-aip \
+                ply \
+                deluge-client \
+                enum34 \
+                pyyaml \
+                requests \
                 pillow \
                 pandas \
                 matplotlib \
