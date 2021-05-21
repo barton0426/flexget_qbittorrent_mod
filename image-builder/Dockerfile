@@ -2,8 +2,8 @@ FROM docker.io/python:3-alpine
 ENV PYTHONUNBUFFERED 1
 
 RUN \
-    #sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    #pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
     echo "**** install build packages ****" && \
     apk add --no-cache --upgrade \
         build-base \
@@ -22,18 +22,15 @@ RUN pip install -U pip && \
     pip wheel flexget && \
     pip wheel python-telegram-bot==12.8 && \
     pip wheel baidu-aip && \
-    pip wheel ply \
-    pip wheel deluge-client \
-    pip wheel enum34 \
-    pip wheel pyyaml \
-    pip wheel requests \
     pip wheel pillow && \
     pip wheel pandas && \
     pip wheel matplotlib && \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
     pip wheel pyppeteer && \
-    pip wheel pyppeteer_stealth
+    pip wheel pyppeteer_stealth && \
+    pip wheel ply
+
 
 FROM docker.io/python:3-alpine
 LABEL maintainer="madwind.cn@gmail.com" \
@@ -41,8 +38,8 @@ LABEL maintainer="madwind.cn@gmail.com" \
 ENV PYTHONUNBUFFERED 1
 
 RUN \
-    #sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    #pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
     echo "**** install runtime packages ****" && \
     apk add --no-cache \
         shadow \
@@ -60,18 +57,14 @@ RUN pip install -U pip && \
                 flexget \
                 python-telegram-bot==12.8 \
                 baidu-aip \
-                ply \
-                deluge-client \
-                enum34 \
-                pyyaml \
-                requests \
                 pillow \
                 pandas \
                 matplotlib \
                 fuzzywuzzy \
                 python-Levenshtein \
                 pyppeteer \
-                pyppeteer_stealth && \
+                pyppeteer_stealth \
+                ply && \
     rm -rf /wheels
 
 ADD link_chromium .
@@ -97,3 +90,4 @@ WORKDIR /config
 EXPOSE 3539 3539/tcp
 
 ENTRYPOINT ["sh","-c","/usr/bin/entrypoint.sh"]
+
