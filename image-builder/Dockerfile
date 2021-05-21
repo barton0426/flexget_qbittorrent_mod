@@ -22,6 +22,11 @@ RUN pip install -U pip && \
     pip wheel flexget && \
     pip wheel python-telegram-bot==12.8 && \
     pip wheel baidu-aip && \
+    pip wheel ply \
+    pip wheel deluge-client \
+    pip wheel enum34 \
+    pip wheel pyyaml \
+    pip wheel requests \
     pip wheel pillow && \
     pip wheel pandas && \
     pip wheel matplotlib && \
