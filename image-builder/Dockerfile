@@ -80,12 +80,19 @@ RUN \
  useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
  usermod -G users flexget && \
  chown -R flexget:flexget /home/flexget && \
- chmod +x /usr/bin/entrypoint.sh
+ chmod +x /usr/bin/entrypoint.sh && \
+ cd / && \
+ wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
+ mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
+ wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
+ wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
+ cp -r -f flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
+ rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE
 
 # add default volumes
 VOLUME /config /downloads
 WORKDIR /config
-
+ENV FG_WEBUI_PASSWD
 # expose port for flexget webui
 EXPOSE 3539 3539/tcp
 
