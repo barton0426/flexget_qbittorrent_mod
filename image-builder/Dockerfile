@@ -89,10 +89,13 @@ RUN \
  cp -r -f flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
  rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE
 
+ENV FG_WEBUI_PASSWD Qwer@1357
+ENV TZ Asia/Shanghai
+
 # add default volumes
 VOLUME /config /downloads
 WORKDIR /config
-ENV FG_WEBUI_PASSWD Qwer@1357
+
 # expose port for flexget webui
 EXPOSE 3539 3539/tcp
 
