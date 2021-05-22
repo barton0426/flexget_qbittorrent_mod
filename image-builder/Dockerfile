@@ -92,7 +92,7 @@ RUN \
 # add default volumes
 VOLUME /config /downloads
 WORKDIR /config
-ENV FG_WEBUI_PASSWD
+ENV FG_WEBUI_PASSWD Qwer@1357
 # expose port for flexget webui
 EXPOSE 3539 3539/tcp
 
