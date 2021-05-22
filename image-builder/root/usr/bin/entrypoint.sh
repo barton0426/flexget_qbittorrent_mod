@@ -22,7 +22,7 @@ else
   cp /defaults/config.example.yml /config/config.yml
 fi
 
-#copy plugins
+# copy plugins
 cp -r -u /plugins/* /config/plugins
 
 # set FG_WEBUI_PASSWD
