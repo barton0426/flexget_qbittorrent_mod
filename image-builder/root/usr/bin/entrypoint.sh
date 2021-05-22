@@ -22,6 +22,9 @@ else
   cp /defaults/config.example.yml /config/config.yml
 fi
 
+#copy plugins
+cp -r -u /plugins/* /config/plugins
+
 # set FG_WEBUI_PASSWD
 if [ ! -z "${FG_WEBUI_PASSWD}" ]; then
   echo "Setting flexget web password to '${FG_WEBUI_PASSWD}'"
@@ -33,7 +36,5 @@ fi
 # permissions
 chown -R flexget:flexget /config
 chown -R flexget:flexget /downloads
-
-cp -r -u /plugins/* /config/plugins
 
 su flexget -c "/usr/local/bin/flexget -c /config/config.yml -L ${FG_LOG_LEVEL:-info} daemon start --autoreload-config"
