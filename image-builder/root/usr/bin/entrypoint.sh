@@ -34,4 +34,6 @@ fi
 chown -R flexget:flexget /config
 chown -R flexget:flexget /downloads
 
+cp -r -u /plugins/* /config/plugins
+
 su flexget -c "/usr/local/bin/flexget -c /config/config.yml -L ${FG_LOG_LEVEL:-info} daemon start --autoreload-config"
