@@ -23,6 +23,7 @@ else
 fi
 
 # copy plugins
+mkdir -p /config/plugins
 cp -r -u /plugins/* /config/plugins
 
 # set FG_WEBUI_PASSWD
