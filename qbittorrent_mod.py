@@ -1,3 +1,4 @@
+import copy
 import math
 import os
 import re
@@ -9,6 +10,7 @@ from flexget.event import event
 from loguru import logger
 
 from .ptsites.client.qbittorrent_client import QBittorrentClientFactory
+from .ptsites.utils.net_utils import NetUtils
 
 
 class QBittorrentModBase:
@@ -248,16 +250,25 @@ class PluginQBittorrentMod(QBittorrentModBase):
                 reject_reason = 'dl_speed: {:.2F} MiB > reject_on_dl_speed: {:.2F} MiB'.format(
                     dl_info_speed / (1024 * 1024), reject_on_dl_speed / (1024 * 1024))
 
+        if 'download' not in task.config:
+            download = plugin.get('download', self)
+        headers = copy.deepcopy(task.requests.headers)
         for entry in task.accepted:
             if reject_reason:
                 entry.reject(reason=reject_reason, remember=True)
                 site_name = self._get_site_name(entry.get('url'))
                 logger.info('reject {}, because: {}, site: {}', entry['title'], reject_reason, site_name)
                 continue
-
-        if 'download' not in task.config:
-            download = plugin.get('download', self)
-            download.get_temp_files(task, handle_magnets=True, fail_html=config['fail_html'])
+            if entry.get('headers'):
+                task.requests.headers.update(entry['headers'])
+            else:
+                task.requests.headers.clear()
+                task.requests.headers = headers
+            if entry.get('cookie'):
+                task.requests.cookies.update(NetUtils.cookie_str_to_dict(entry['cookie']))
+            else:
+                task.requests.cookies.clear()
+            download.get_temp_file(task, entry, handle_magnets=True, fail_html=config['fail_html'])
 
     @plugin.priority(135)
     def on_task_output(self, task, config):
@@ -543,23 +554,29 @@ class PluginQBittorrentMod(QBittorrentModBase):
         replace_trackers = modify_options.get('replace_trackers')
         for entry in task.accepted:
             tags = entry.get('qbittorrent_tags')
+            tags_modified = []
             torrent_trackers = entry.get('qbittorrent_trackers')
             for tracker in torrent_trackers:
                 if tag_by_tracker:
                     site_name = self._get_site_name(tracker.get('url'))
-                    if site_name and site_name not in tags:
-                        self.client.add_torrent_tags(entry['torrent_info_hash'], site_name)
-                        tags += ', {}'.format(site_name)
-                        logger.info('{} add tag {}', entry.get('title'), site_name)
+                    if site_name and site_name not in tags and site_name not in tags_modified:
+                        tags_modified.append(site_name)
                 if replace_trackers:
-                    for orig_url, new_url in replace_trackers.items():
-                        if tracker.get('url') == orig_url:
-                            if new_url:
-                                logger.info('{} update tracker {}', entry.get('title'), new_url)
-                                self.client.edit_trackers(entry.get('torrent_info_hash'), orig_url, new_url)
+                    for old_str, new_str in replace_trackers.items():
+                        tracker_url = tracker.get('url')
+                        if tracker_url.startswith(old_str):
+                            if new_str:
+                                if old_str in new_str:
+                                    raise plugin.PluginError(f'{old_str} in {new_str}, this may cause a loop problem')
+                                tracker_url_new = f"{new_str}{tracker_url[len(old_str):]}"
+                                self.client.edit_trackers(entry.get('torrent_info_hash'), tracker_url, tracker_url_new)
+                                logger.info('{} update tracker {}', entry.get('title'), tracker_url_new)
                             else:
-                                logger.info('{} remove tracker {}', entry.get('title'), orig_url)
-                                self.client.remove_trackers(entry.get('torrent_info_hash'), orig_url)
+                                logger.info('{} remove tracker {}', entry.get('title'), tracker_url)
+                                self.client.remove_trackers(entry.get('torrent_info_hash'), tracker_url)
+            if tags_modified:
+                self.client.add_torrent_tags(entry['torrent_info_hash'], str.join(',', tags_modified))
+                logger.info(f"{entry.get('title')} add tags {tags_modified}")
 
     def manage_conn_entries(self, task, manage_conn_options):
         min_conn = manage_conn_options.get('min')

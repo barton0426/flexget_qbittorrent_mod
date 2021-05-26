@@ -46,7 +46,7 @@ class PluginIYUUAutoReseed():
         torrent_dict, torrents_hashes = self.get_torrents_data(task, config)
         try:
             data = {
-                'sign': 'IYUU419Tada6a99f2a6591cc51e656ca4458317648931830',
+                'sign': config['iyuu'],
                 'version': config['version']
             }
             sites_response = task.requests.get('http://api.iyuu.cn/index.php?s=App.Api.Sites', timeout=60,
@@ -78,6 +78,8 @@ class PluginIYUUAutoReseed():
                 for torrent in seeds_data['torrent']:
                     site = sites_json.get(str(torrent['sid']))
                     if not site:
+                        continue
+                    if torrent['info_hash'] in torrent_dict.keys():
                         continue
                     site_name = self._get_site_name(site['base_url'])
                     passkey = passkeys.get(site_name)
@@ -112,8 +114,7 @@ class PluginIYUUAutoReseed():
                     Executor.build_reseed(entry, config, site, passkey, torrent_id)
                     if show_detail:
                         logger.info(
-                            'accept site: {}, title: {}, url: {}'.format(site_name, client_torrent['title'],
-                                                                         entry.get('url', None)))
+                            f"accept site: {site_name}, title: {client_torrent['title']}, url: {entry.get('url', None)}")
                     if entry.get('url'):
                         entries.append(entry)
         return entries
