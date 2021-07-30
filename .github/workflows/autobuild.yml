@@ -27,6 +27,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          #context: .
-          file: ./image-builder/Dockerfile
+          context: ./image-builder
+          #file: ./image-builder/Dockerfile
           tags: barton0426/docker-flexget-autoremove-torrents-plugin:latest
