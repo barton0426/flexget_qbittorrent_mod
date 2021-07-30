@@ -70,7 +70,7 @@ RUN pip install -U pip && \
 ADD link_chromium .
 
 # add local files
-COPY root/ /
+COPY ./root/ /
 
 RUN \
  echo "**** create abc user and make our folders ****" && \
