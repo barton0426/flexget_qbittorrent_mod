@@ -29,11 +29,12 @@ RUN pip install -U pip && \
     pip wheel python-Levenshtein && \
     pip wheel pyppeteer && \
     pip wheel pyppeteer_stealth && \
-    pip wheel ply
+    pip wheel ply && \
+	pip wheel chardet
 
 
 FROM docker.io/python:3-alpine
-LABEL maintainer="madwind.cn@gmail.com" \
+LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
 
@@ -64,7 +65,8 @@ RUN pip install -U pip && \
                 python-Levenshtein \
                 pyppeteer \
                 pyppeteer_stealth \
-                ply && \
+                ply \
+				chardet && \
     rm -rf /wheels
 
 ADD link_chromium .
@@ -86,7 +88,7 @@ RUN \
  mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
  wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
  wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
- cp -r -f flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
+ cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
  rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE
 
 ENV FG_WEBUI_PASSWD Qwer@1357
