@@ -30,7 +30,8 @@ RUN pip install -U pip && \
     pip wheel pyppeteer && \
     pip wheel pyppeteer_stealth && \
     pip wheel ply && \
-	pip wheel chardet
+    pip wheel chardet && \
+    pip wheel charset-normalizer
 
 
 FROM docker.io/python:3-alpine
@@ -66,7 +67,8 @@ RUN pip install -U pip && \
                 pyppeteer \
                 pyppeteer_stealth \
                 ply \
-				chardet && \
+		chardet \
+		charset_normalizer && \
     rm -rf /wheels
 
 ADD link_chromium .
