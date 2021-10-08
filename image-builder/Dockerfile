@@ -66,7 +66,7 @@ RUN pip install -U pip && \
                 pyppeteer \
                 pyppeteer_stealth \
                 ply \
-		chardet
+		chardet && \
     rm -rf /wheels
 
 ADD link_chromium .
