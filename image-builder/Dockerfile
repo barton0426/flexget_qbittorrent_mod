@@ -18,7 +18,8 @@ RUN \
 
 WORKDIR /wheels
 
-RUN pip install -U pip && \
+RUN \
+    pip install -U pip && \
     pip wheel flexget && \
     pip wheel python-telegram-bot==12.8 && \
     pip wheel baidu-aip && \
@@ -51,7 +52,8 @@ RUN \
 
 COPY --from=0 /wheels /wheels
 
-RUN pip install -U pip && \
+RUN \
+    pip install -U pip && \
     pip install --no-cache-dir \
                 --no-index \
                 -f /wheels \
