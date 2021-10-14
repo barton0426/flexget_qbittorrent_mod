@@ -20,5 +20,5 @@ jobs:
                 dockerUser: ${{ secrets.DOCKERHUB_USERNAME }}
                 dockerPassword: ${{ secrets.DOCKERHUB_TOKEN }}
                 context: ./image-builder
-                platforms: linux/amd64,linux/arm64
-                imageName: barton0426/docker-flexget-autoremove-torrents-plugin:latest
+                platform: linux/amd64,linux/arm64
+                imageName: barton0426/docker-flexget-autoremove-torrents-plugin
