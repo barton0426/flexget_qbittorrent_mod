@@ -1,10 +1,12 @@
 FROM docker.io/python:3-alpine
+LABEL maintainer="barton0426@msn.com" \
+      org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
 
 RUN \
     # sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
-    echo "**** install build packages ****" && \
+	echo "**** install build packages ****" && \
     apk add --no-cache --upgrade \
         build-base \
         libffi-dev \
@@ -14,34 +16,7 @@ RUN \
         freetype-dev \
         libpng-dev \
         rust \
-        cargo
-
-WORKDIR /wheels
-
-RUN \
-    pip install -U pip && \
-    pip wheel flexget && \
-    pip wheel python-telegram-bot==12.8 && \
-    pip wheel baidu-aip && \
-    pip wheel pillow && \
-    pip wheel pandas && \
-    pip wheel matplotlib && \
-    pip wheel fuzzywuzzy && \
-    pip wheel python-Levenshtein && \
-    pip wheel pyppeteer && \
-    pip wheel pyppeteer_stealth && \
-    pip wheel ply && \
-    pip wheel chardet
-
-
-FROM docker.io/python:3-alpine
-LABEL maintainer="barton0426@msn.com" \
-      org.label-schema.name="flexget"
-ENV PYTHONUNBUFFERED 1
-
-RUN \
-    # sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+        cargo && \
     echo "**** install runtime packages ****" && \
     apk add --no-cache \
         shadow \
@@ -50,13 +25,9 @@ RUN \
         tzdata && \
     rm -rf /var/cache/apk/*
 
-COPY --from=0 /wheels /wheels
-
 RUN \
     pip install -U pip && \
     pip install --no-cache-dir \
-                --no-index \
-                -f /wheels \
                 flexget \
                 python-telegram-bot==12.8 \
                 baidu-aip \
@@ -69,7 +40,6 @@ RUN \
                 pyppeteer_stealth \
                 ply \
                 chardet && \
-    rm -rf /wheels
 
 ADD link_chromium .
 
