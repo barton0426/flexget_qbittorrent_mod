@@ -20,7 +20,6 @@ WORKDIR /wheels
 
 RUN \
     pip install -U pip && \
-    pip wheel greenlet && \
     pip wheel flexget && \
     pip wheel python-telegram-bot==12.8 && \
     pip wheel baidu-aip && \
@@ -58,6 +57,7 @@ RUN \
     pip install --no-cache-dir \
                 --no-index \
                 -f /wheels \
+                greenlet \
                 flexget \
                 python-telegram-bot==12.8 \
                 baidu-aip \
