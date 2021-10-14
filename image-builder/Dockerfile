@@ -28,6 +28,7 @@ RUN \
 RUN \
     pip install -U pip && \
     pip install --no-cache-dir \
+                numpy \
                 flexget \
                 python-telegram-bot==12.8 \
                 baidu-aip \
