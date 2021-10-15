@@ -70,7 +70,6 @@ RUN \
     chown -R flexget:flexget /home/flexget && \
     chmod +x /usr/bin/entrypoint.sh && \
     cd / && \
-    apt update && apt install -y --no-install-recommends wget unzip
     wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
     mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
     wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
