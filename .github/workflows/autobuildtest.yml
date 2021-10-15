@@ -32,6 +32,6 @@ jobs:
         with:
           push: true
           context: ./image-builder
-          file: Dockerfiletest
+          file: ./image-builder/Dockerfiletest
           platforms: linux/amd64,linux/arm64
           tags: barton0426/docker-flexget-autoremove-torrents-plugin:test
