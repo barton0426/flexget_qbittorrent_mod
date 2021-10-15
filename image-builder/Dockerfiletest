@@ -1,10 +1,9 @@
-FROM docker.io/python:3.9.7
+FROM docker.io/python:3.8.12-slim
 ENV PYTHONUNBUFFERED 1
 
 RUN \
     echo "**** install build packages ****" && \
     apt update && apt install -y \
-        python3-pip \
         cargo
 
 WORKDIR /wheels
@@ -25,22 +24,10 @@ RUN \
     pip wheel chardet
 
 
-FROM docker.io/python:3.9.7-slim
+FROM docker.io/python:3.8.12-slim
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
-
-RUN \
-    echo "**** install runtime packages ****" && \
-    apt update && apt install -y --no-install-recommends \
-        python3-pip \
-		wget \
-		unzip \
-        chromium \
-        ca-certificates \
-        tzdata && \
-	apt clean && apt autoclean && apt autoremove && \
-    rm -rf /var/lib/apt/lists/*
 
 COPY --from=0 /wheels /wheels
 
@@ -69,21 +56,28 @@ ADD link_chromium .
 COPY ./root/ /
 
 RUN \
- echo "**** create abc user and make our folders ****" && \
- python3 link_chromium && \
- rm link_chromium && \
- groupmod -g 1000 users && \
- useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
- usermod -G users flexget && \
- chown -R flexget:flexget /home/flexget && \
- chmod +x /usr/bin/entrypoint.sh && \
- cd / && \
- wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
- mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
- wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
- wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
- cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
- rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE
+    echo "**** install runtime packages ****" && \
+    apt update && apt install -y --no-install-recommends \
+        chromium \
+    	wget \
+    	unzip && \
+    echo "**** create abc user and make our folders ****" && \
+    python3 link_chromium && \
+    rm link_chromium && \
+    groupmod -g 1000 users && \
+    useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
+    usermod -G users flexget && \
+    chown -R flexget:flexget /home/flexget && \
+    chmod +x /usr/bin/entrypoint.sh && \
+    cd / && \
+    apt update && apt install -y --no-install-recommends wget unzip
+    wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
+    mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
+    wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
+    wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
+    cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
+    rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE && \
+    apt purge -y wget unzip && apt clean && apt autoclean && apt autoremove -y && rm -rf /var/lib/apt/lists/*
 
 ENV FG_WEBUI_PASSWD Qwer@1357
 ENV TZ Asia/Shanghai
