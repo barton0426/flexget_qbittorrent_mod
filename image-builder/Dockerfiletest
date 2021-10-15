@@ -35,6 +35,7 @@ RUN \
     apt update && apt install -y --no-install-recommends \
         python3-pip \
 		wget \
+		unzip \
         chromium \
         ca-certificates \
         tzdata && \
