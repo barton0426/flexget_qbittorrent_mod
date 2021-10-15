@@ -1,4 +1,4 @@
-FROM docker.io/python:3.8.12-slim
+FROM docker.io/python:3.9.7-slim
 ENV PYTHONUNBUFFERED 1
 
 RUN \
@@ -24,7 +24,7 @@ RUN \
     pip wheel chardet
 
 
-FROM docker.io/python:3.8.12-slim
+FROM docker.io/python:3.9.7-slim
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
@@ -50,20 +50,14 @@ RUN \
                 chardet && \
     rm -rf /wheels
 
-ADD link_chromium .
-
-# add local files
 COPY ./root/ /
 
 RUN \
     echo "**** install runtime packages ****" && \
     apt update && apt install -y --no-install-recommends \
-        chromium \
     	wget \
     	unzip && \
     echo "**** create abc user and make our folders ****" && \
-    python3 link_chromium && \
-    rm link_chromium && \
     groupmod -g 1000 users && \
     useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
     usermod -G users flexget && \
@@ -76,7 +70,7 @@ RUN \
     wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
     cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
     rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE && \
-    apt purge -y wget unzip && apt clean && apt autoclean && apt autoremove -y && rm -rf /var/lib/apt/lists/*
+    apt purge -y wget unzip && apt autoremove -y && rm -rf /var/lib/apt/lists/*
 
 ENV FG_WEBUI_PASSWD Qwer@1357
 ENV TZ Asia/Shanghai
