@@ -28,6 +28,7 @@ jobs:
       -
         name: Build and push
         id: docker_build
+        timeout-minutes: 1200
         uses: docker/build-push-action@v2
         with:
           push: true
