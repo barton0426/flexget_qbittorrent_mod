@@ -52,3 +52,4 @@ class MainClass(NexusPHP):
             }
         })
         return selector
+
