@@ -22,7 +22,7 @@ schedules:
 
 variables:
   headers:
-    user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'
+    user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36'
   via: &via_setting
     - wecom:
         corp_id: 'xxxxxxxx'
@@ -53,7 +53,15 @@ variables:
     avgv: 'xxxxxxxx'
     avistaz: 'xxxxxxxx'
     beitai: 'xxxxxxxx'
+    bootytape:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     btschool: 'xxxxxxxx'
+    cathode-ray:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     ccfbits: 'xxxxxxxx'
     chdbits: 'xxxxxxxx'
     cinemaz: 'xxxxxxxx'
@@ -71,6 +79,10 @@ variables:
     eastgame: 'xxxxxxxx'
     et8: 'xxxxxxxx'
     exoticaz: 'xxxxxxxx'
+    femdomcult:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     filelist:
       login:
         username: 'xxxxxxxx'
@@ -80,7 +92,7 @@ variables:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
     gay-torrents_org: 'xxxxxxxx'
-    gaytorrent:
+    gaytor:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
@@ -104,7 +116,10 @@ variables:
     hdfans: 'xxxxxxxx'
     hdhome: 'xxxxxxxx'
     hdmayi: 'xxxxxxxx'
-    hdpost: 'xxxxxxxx'
+    hdpost:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     hdsky: 'xxxxxxxx'
     hdtime: 'xxxxxxxx'
     hdupt: 'xxxxxxxx'
@@ -140,17 +155,37 @@ variables:
     pthome: 'xxxxxxxx'
     pttime: 'xxxxxxxx'
     ptsbao: 'xxxxxxxx'
+    pussytorrents:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     skyey2:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
     soulvoice: 'xxxxxxxx'
+    speedapp:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     springsunday: 'xxxxxxxx'
     sjtu: 'xxxxxxxx'
-    torrentleech: 'xxxxxxxx'
     tjupt: 'xxxxxxxx'
+    torrentdb:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
+    torrentleech: 'xxxxxxxx'
+    torrentseeds:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     ultrahd: 'xxxxxxxx'
     xtremewrestlingtorrents:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
+    xwt-classics:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
