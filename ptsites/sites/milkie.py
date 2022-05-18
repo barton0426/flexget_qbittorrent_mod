@@ -64,11 +64,11 @@ class MainClass(SiteBase):
             },
         }
 
-    def build_workflow(self, entry, config):
+    def build_login_workflow(self, entry, config):
         return [
             Work(
                 url='/api/v1/auth/sessions',
-                method='login',
+                method='password',
                 succeed_regex='{"token":".*"}',
                 check_state=('final', SignState.SUCCEED),
                 is_base_content=True,
@@ -76,7 +76,7 @@ class MainClass(SiteBase):
             )
         ]
 
-    def sign_in_by_login(self, entry, config, work, last_content):
+    def sign_in_by_password(self, entry, config, work, last_content):
         login = entry['site_config'].get('login')
         if not login:
             entry.fail_with_prefix('Login data not found!')

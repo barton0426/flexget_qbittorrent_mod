@@ -61,11 +61,14 @@ variables:
     avgv: 'xxxxxxxx'
     avistaz: 'xxxxxxxx'
     beitai: 'xxxxxxxx'
+    bitbr: 'xxxxxxxx'
+    bitsexy: 'xxxxxxxx'
     bootytape:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
     btschool: 'xxxxxxxx'
+    carpt: 'xxxxxxxx'
     cathode-ray:
       login:
         username: 'xxxxxxxx'
@@ -140,7 +143,10 @@ variables:
     htpt: 'xxxxxxxx'
     iptorrents: 'xxxxxxxx'
     joyhd: 'xxxxxxxx'
-    jpopsuki: 'xxxxxxxx'
+    jpopsuki:
+      login:
+        username: 'xxxxxxxx'
+        password: 'xxxxxxxx'
     jptv: 'xxxxxxxx'
     keepfrds: 'xxxxxxxx'
     kufirc:
@@ -159,6 +165,7 @@ variables:
         password: 'xxxxxxxx'
     msg: 'xxxxxxxx'
     nanyangpt: 'xxxxxxxx'
+    napqaq: 'xxxxxxxx'
     nicept: 'xxxxxxxx'
     ninjacentral:
       login:
@@ -171,6 +178,7 @@ variables:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
+    ptchina: 'xxxxxxxx'
     pterclub: 'xxxxxxxx'
     pthome: 'xxxxxxxx'
     pttime: 'xxxxxxxx'
@@ -179,6 +187,7 @@ variables:
       login:
         username: 'xxxxxxxx'
         password: 'xxxxxxxx'
+    scenetime: 'xxxxxxxx'
     skyey2:
       login:
         username: 'xxxxxxxx'
@@ -190,6 +199,7 @@ variables:
         password: 'xxxxxxxx'
     springsunday: 'xxxxxxxx'
     sjtu: 'xxxxxxxx'
+    theaudioscene: 'xxxxxxxx'
     tjupt: 'xxxxxxxx'
     torrentdb:
       login:

@@ -35,11 +35,11 @@ class MainClass(NexusPHP):
             }
         }
 
-    def build_workflow(self, entry, config):
+    def build_login_workflow(self, entry, config):
         return [
             Work(
                 url='/takelogin.php',
-                method='login',
+                method='password',
                 succeed_regex='歡迎回來',
                 check_state=('final', SignState.SUCCEED),
                 response_urls=['/verify.php?returnto=', '/index.php'],
@@ -48,7 +48,7 @@ class MainClass(NexusPHP):
             )
         ]
 
-    def sign_in_by_login(self, entry, config, work, last_content):
+    def sign_in_by_password(self, entry, config, work, last_content):
         login = entry['site_config'].get('login')
         if not login:
             entry.fail_with_prefix('Login data not found!')

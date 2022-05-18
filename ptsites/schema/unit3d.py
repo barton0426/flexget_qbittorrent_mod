@@ -25,10 +25,10 @@ class Unit3D(SiteBase):
             },
             'details': {
                 'uploaded': {
-                    'regex': ('(上传|Upload).+?([\\d.]+ ?[ZEPTGMK]?iB)', 2)
+                    'regex': ('(上传|Upload).+?([\\d.]+.?[ZEPTGMK]?iB)', 2)
                 },
                 'downloaded': {
-                    'regex': ('(下载|Download).+?([\\d.]+ ?[ZEPTGMK]?iB)', 2)
+                    'regex': ('(下载|Download).+?([\\d.]+.?[ZEPTGMK]?iB)', 2)
                 },
                 'share_ratio': {
                     'regex': ('(分享率|Ratio).+?([\\d.]+)', 2)
@@ -61,5 +61,4 @@ class Unit3D(SiteBase):
         return value.replace(' ', '')
 
     def handle_join_date(self, value):
-        print(value)
         return parse(value).date()

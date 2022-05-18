@@ -105,15 +105,20 @@ class SiteBase:
             entry.fail_with_prefix(f"site: {entry['site_name']} url or workflow is empty")
             return
         last_content = None
+        last_response = None
         for work in self.workflow:
             self.work_urljoin(work, entry['url'])
             method_name = f"sign_in_by_{work.method}"
             if method := getattr(self, method_name, None):
-                last_response = method(entry, config, work, last_content)
-                if last_response == 'skip':
-                    continue
-                if (last_content := NetUtils.decode(last_response)) and work.is_base_content:
+                if work.method == 'get' and last_response and NetUtils.url_equal(
+                        work.url, last_response.url) and work.is_base_content:
                     entry['base_content'] = last_content
+                else:
+                    last_response = method(entry, config, work, last_content)
+                    if last_response == 'skip':
+                        continue
+                    if (last_content := NetUtils.decode(last_response)) and work.is_base_content:
+                        entry['base_content'] = last_content
                 if work.check_state:
                     if not self.check_state(entry, work, last_response, last_content):
                         return
@@ -171,7 +176,7 @@ class SiteBase:
                 if re_search := re.search(url_regex, response.text):
                     download_url = urljoin(base_url, re_search.group())
         except Exception as e:
-            logger.warning(str(e.args))
+            logger.warning(e)
         if not download_url:
             entry.fail(f"site:{entry['class_name']} can not found download url from {torrent_page_url}")
         entry['url'] = download_url
@@ -194,7 +199,7 @@ class SiteBase:
                 entry.fail_with_prefix(f'response.status_code={response.status_code}')
             return response
         except Exception as e:
-            entry.fail_with_prefix(NetworkState.NETWORK_ERROR.value.format(url=url, error=str(e.args)))
+            entry.fail_with_prefix(NetworkState.NETWORK_ERROR.value.format(url=url, error=e))
         return None
 
     def sign_in_by_get(self, entry, config, work, last_content=None):
@@ -310,14 +315,16 @@ class SiteBase:
         if not (succeed_regex := work.succeed_regex):
             entry['result'] = SignState.SUCCEED.value
             return SignState.SUCCEED
-        if isinstance(succeed_regex, str):
+        if not isinstance(succeed_regex, list):
             succeed_regex = [succeed_regex]
 
         for regex in succeed_regex:
+            if isinstance(regex, str):
+                regex = (regex, 0)
+            regex, group_index = regex
             if succeed_msg := re.search(regex, content):
-                entry['result'] = re.sub('<.*?>|&shy;|&nbsp;', '', succeed_msg.group())
+                entry['result'] = re.sub('<.*?>|&shy;|&nbsp;', '', succeed_msg.group(group_index))
                 return SignState.SUCCEED
-
         if fail_regex := work.fail_regex:
             if re.search(fail_regex, content):
                 return SignState.WRONG_ANSWER
