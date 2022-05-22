@@ -2,15 +2,8 @@ from .site_base import SiteBase
 
 
 class Discuz(SiteBase):
-
-    def get_message(self, entry, config):
-        self.get_discuz_message(entry, config)
-
-    def get_details(self, entry, config):
-        self.get_details_base(entry, config, self.build_selector())
-
     def build_selector(self):
-        selector = {
+        return {
             'user_id': 'home.php\\?mod=space&amp;uid=(\\d+)',
             'detail_sources': {
                 'default': {
@@ -46,7 +39,3 @@ class Discuz(SiteBase):
                 'hr': None,
             }
         }
-        return selector
-
-    def get_discuz_message(self, entry, config, messages_url='/home.php?mod=space&do=pm'):
-        entry['result'] += '(TODO: Message)'

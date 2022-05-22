@@ -28,7 +28,7 @@ class MainClass(XBT):
             ),
             Work(
                 url='/takelogin.php',
-                method='password',
+                method='login',
                 succeed_regex='Logout',
                 check_state=('final', SignState.SUCCEED),
                 is_base_content=True,
@@ -36,9 +36,8 @@ class MainClass(XBT):
             )
         ]
 
-    def sign_in_by_password(self, entry, config, work, last_content):
-        login = entry['site_config'].get('login')
-        if not login:
+    def sign_in_by_login(self, entry, config, work, last_content):
+        if not (login := entry['site_config'].get('login')):
             entry.fail_with_prefix('Login data not found!')
             return
         last_content = ast.literal_eval(last_content)
@@ -56,8 +55,4 @@ class MainClass(XBT):
             'submitme': 'X',
             'returnto': '/'
         }
-        login_response = self._request(entry, 'post', work.url, data=data)
-        login_network_state = self.check_network_state(entry, work, login_response)
-        if login_network_state != NetworkState.SUCCEED:
-            return
-        return login_response
+        return self._request(entry, 'post', work.url, data=data)

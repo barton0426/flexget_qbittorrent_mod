@@ -1,6 +1,6 @@
 from ..schema.nexusphp import AttendanceHR
 from ..schema.site_base import Work, NetworkState
-from ..utils.google_auth import GoogleAuth
+from ..utils import google_auth
 
 
 class MainClass(AttendanceHR):
@@ -36,22 +36,16 @@ class MainClass(AttendanceHR):
         return [
             Work(
                 url='/takelogin.php',
-                method='password',
+                method='login',
                 check_state=('network', NetworkState.SUCCEED),
                 response_urls=['/index.php']
             )
         ]
 
-    def sign_in_by_password(self, entry, config, work, last_content=None):
-        login = entry['site_config'].get('login')
-        if not login:
-            entry.fail_with_prefix('Login data not found!')
-            return
-        secret_key = login.get('secret_key')
-        data = {
-            '2fa_code': secret_key and GoogleAuth.calc(secret_key) or '',
+    def build_login_data(self, login, last_content):
+        return {
+            '2fa_code': login.get('secret_key') and google_auth.calc(login['secret_key']) or '',
             'trackerssl': 'yes',
             'username': login['username'],
             'password': login['password'],
         }
-        return self._request(entry, 'post', work.url, data=data)

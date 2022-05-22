@@ -39,37 +39,25 @@ class MainClass(Unit3D):
             ),
             Work(
                 url='/login',
-                method='password',
+                method='login',
                 succeed_regex='Logout',
                 check_state=('final', SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['/pages/1'],
-                token_regex=r'(?<=name="_token" value=").+?(?=")',
-                captcha_regex=r'(?<=name="_captcha" value=").+?(?=")',
             )
         ]
 
-    def sign_in_by_password(self, entry, config, work, last_content):
-        login = entry['site_config'].get('login')
-        if not login:
-            entry.fail_with_prefix('Login data not found!')
-            return
-        r = re.compile(r'name="(?P<name>.+?)" value="(?P<value>.+?)" />\s*<button type="submit"')
-        m = re.search(r, last_content)
-        data = {
-            '_token': re.search(work.token_regex, last_content).group(),
+    def build_login_data(self, login, last_content):
+        m = re.search(r'name="(?P<name>.+?)" value="(?P<value>.+?)" />\s*<button type="submit"', last_content)
+        return {
+            '_token': re.search(r'(?<=name="_token" value=").+?(?=")', last_content).group(),
             'username': login['username'],
             'password': login['password'],
             'remember': 'on',
-            '_captcha': re.search(work.captcha_regex, last_content).group(),
+            '_captcha': re.search(r'(?<=name="_captcha" value=").+?(?=")', last_content).group(),
             '_username': '',
             m.group('name'): m.group('value'),
         }
-        login_response = self._request(entry, 'post', work.url, data=data)
-        login_network_state = self.check_network_state(entry, work, login_response)
-        if login_network_state != NetworkState.SUCCEED:
-            return
-        return login_response
 
     def build_selector(self):
         selector = super(MainClass, self).build_selector()

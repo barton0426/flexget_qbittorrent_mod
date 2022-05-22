@@ -1,6 +1,6 @@
 from ..schema.nexusphp import Attendance
 from ..schema.site_base import Work, SignState
-from ..utils.net_utils import NetUtils
+from ..utils import net_utils
 
 
 class MainClass(Attendance):
@@ -14,20 +14,29 @@ class MainClass(Attendance):
     def build_workflow(self, entry, config):
         return [
             Work(
-                url='/attendance.php',
+                url='/',
                 method='get',
+                succeed_regex='已签到',
+                check_state=('sign_in', SignState.NO_SIGN_IN),
+                is_base_content=True,
+            ),
+            Work(
+                url='/attendance.php?action=sign',
+                method='punch_in',
                 succeed_regex=[
-                    '这是您的第 \\d+ 次签到，已连续签到 \\d+ 天，本次签到获得 \\d+ 个奶糖。',
-                    '已签到'
+                    '签到成功',
+                    '您今天已经签到过了'
                 ],
                 check_state=('final', SignState.SUCCEED),
-                is_base_content=True
-            )
+            ),
         ]
+
+    def sign_in_by_punch_in(self, entry, config, work, last_content):
+        return self._request(entry, 'get', work.url, headers={'accept': 'application/json'})
 
     def build_selector(self):
         selector = super(MainClass, self).build_selector()
-        NetUtils.dict_merge(selector, {
+        net_utils.dict_merge(selector, {
             'detail_sources': {
                 'default': {
                     'do_not_strip': True,
@@ -40,7 +49,7 @@ class MainClass(Attendance):
             },
             'details': {
                 'points': {
-                    'regex': '奶糖.*?([\\d,.]+)',
+                    'regex': '奶糖.(?:>.*?){4}([\\d,.]+)',
                     'handle': self.handle_points
                 },
                 'seeding': {

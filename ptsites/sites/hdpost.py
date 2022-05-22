@@ -5,7 +5,8 @@ from flexget.utils.soup import get_soup
 
 from ..schema.site_base import SignState, Work, NetworkState
 from ..schema.unit3d import Unit3D
-from ..utils.net_utils import NetUtils
+from ..utils import net_utils
+from ..utils.value_hanlder import handle_join_date, handle_infinite
 
 
 class MainClass(Unit3D):
@@ -48,7 +49,7 @@ class MainClass(Unit3D):
         }
 
     @classmethod
-    def build_reseed(cls, entry, config, site, passkey, torrent_id):
+    def build_reseed_entry(cls, entry, config, site, passkey, torrent_id):
         download_page = site['download_page'].format(torrent_id=torrent_id, rsskey=passkey['rsskey'])
         entry['url'] = urljoin(MainClass.URL, download_page)
 
@@ -61,11 +62,9 @@ class MainClass(Unit3D):
             ),
             Work(
                 url='/login',
-                method='password',
+                method='login',
                 check_state=('network', NetworkState.SUCCEED),
                 response_urls=['', '/pages/1'],
-                token_regex=r'(?<=name="_token" value=").+?(?=")',
-                captcha_regex=r'(?<=name="_captcha" value=").+?(?=")',
             )
         ]
 
@@ -81,33 +80,24 @@ class MainClass(Unit3D):
             )
         ]
 
-    def sign_in_by_password(self, entry, config, work, last_content):
-        login = entry['site_config'].get('login')
-        if not login:
-            entry.fail_with_prefix('Login data not found!')
-            return
+    def build_login_data(self, login, last_content):
         login_page = get_soup(last_content)
         hidden_input = login_page.select_one('#formContent > form > input[type=hidden]:nth-child(7)')
         name = hidden_input.attrs['name']
         value = hidden_input.attrs['value']
-        data = {
-            '_token': re.search(work.token_regex, last_content).group(),
+        return {
+            '_token': re.search(r'(?<=name="_token" value=").+?(?=")', last_content).group(),
             'username': login['username'],
             'password': login['password'],
             'remember': 'on',
-            '_captcha': re.search(work.captcha_regex, last_content).group(),
+            '_captcha': re.search(r'(?<=name="_captcha" value=").+?(?=")', last_content).group(),
             '_username': '',
             name: value,
         }
-        login_response = self._request(entry, 'post', work.url, data=data)
-        login_network_state = self.check_network_state(entry, work, login_response)
-        if login_network_state != NetworkState.SUCCEED:
-            return
-        return login_response
 
     def build_selector(self):
         selector = super(MainClass, self).build_selector()
-        NetUtils.dict_merge(selector, {
+        net_utils.dict_merge(selector, {
             'user_id': '/users/(.*?)/',
             'detail_sources': {
                 'default': {
@@ -128,7 +118,7 @@ class MainClass(Unit3D):
                 },
                 'share_ratio': {
                     'regex': '分享率.+?([\\d.]+)',
-                    'handle': self.handle_share_ratio
+                    'handle': handle_infinite
                 },
                 'points': {
                     'regex': '魔力.+?(\\d[\\d,. ]*)',
@@ -136,7 +126,7 @@ class MainClass(Unit3D):
                 },
                 'join_date': {
                     'regex': '注册日期 (.*?\\d{4})',
-                    'handle': self.handle_join_date
+                    'handle': handle_join_date
                 },
                 'seeding': {
                     'regex': '做种.+?(\\d+)'
@@ -150,9 +140,3 @@ class MainClass(Unit3D):
             }
         })
         return selector
-
-    def handle_share_ratio(self, value):
-        if value in ['.']:
-            return '0'
-        else:
-            return value

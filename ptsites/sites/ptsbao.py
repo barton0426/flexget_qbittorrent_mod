@@ -1,5 +1,6 @@
 from ..schema.nexusphp import VisitHR
-from ..utils.net_utils import NetUtils
+from ..utils import net_utils
+
 
 class MainClass(VisitHR):
     URL = 'https://ptsbao.club/'
@@ -11,7 +12,7 @@ class MainClass(VisitHR):
 
     def build_selector(self):
         selector = super(MainClass, self).build_selector()
-        NetUtils.dict_merge(selector, {
+        net_utils.dict_merge(selector, {
             'details': {
                 'points': {
                     'regex': '魔力值.*?：([\\d,.]+)'

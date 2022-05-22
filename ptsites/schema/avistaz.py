@@ -1,13 +1,23 @@
-from dateutil.parser import parse
-
 from .site_base import SiteBase, Work, SignState
+from ..utils.value_hanlder import handle_join_date
 
 
 class AvistaZ(SiteBase):
     SUCCEED_REGEX = None
 
+    def build_workflow(self, entry, config):
+        return [
+            Work(
+                url='/',
+                method='get',
+                succeed_regex=self.SUCCEED_REGEX,
+                check_state=('final', SignState.SUCCEED),
+                is_base_content=True
+            )
+        ]
+
     def build_selector(self):
-        selector = {
+        return {
             'user_id': '/profile/(.*?)"',
             'detail_sources': {
                 'default': {
@@ -33,7 +43,7 @@ class AvistaZ(SiteBase):
                 },
                 'join_date': {
                     'regex': 'Joined.(.*? \\d{4})',
-                    'handle': self.handle_join_date
+                    'handle': handle_join_date
                 },
                 'seeding': {
                     'regex': 'Seeding:.(\\d+)'
@@ -46,28 +56,6 @@ class AvistaZ(SiteBase):
                 }
             }
         }
-        return selector
-
-    def get_message(self, entry, config):
-        entry['result'] += '(TODO: Message)'
-
-    def get_details(self, entry, config):
-        self.get_details_base(entry, config, self.build_selector())
 
     def handle_points(self, value):
         return value.replace(' ', '')
-
-    def handle_join_date(self, value):
-        return parse(value).date()
-
-    def build_workflow(self, entry, config):
-        return [
-            Work(
-                url='/',
-                method='get',
-                succeed_regex=self.SUCCEED_REGEX,
-                fail_regex=None,
-                check_state=('final', SignState.SUCCEED),
-                is_base_content=True
-            )
-        ]
