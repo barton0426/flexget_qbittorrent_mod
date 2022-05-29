@@ -1,5 +1,9 @@
-from ..schema.site_base import SignState, Work
+from typing import Final
+
+from ..base.entry import SignInEntry
+from ..base.sign_in import check_final_state, SignState, Work
 from ..schema.unit3d import Unit3D
+from ..utils.net_utils import get_module_name
 from ..utils.value_hanlder import handle_join_date
 
 
@@ -10,18 +14,19 @@ from ..utils.value_hanlder import handle_join_date
 # Choose between oneurl or cookie
 # If oneurl provided, cookie will be ignored.
 
-# OneURL is found by accessing your Beyond-HD web site,
+# OneURL is found by accessing your Beyond-HD website,
 # hovering over the user icon and going to My Security then going to the One URL (OID) tab,
 # and if it's not already active, you need to hit Reset One URL to activate it.
 # Then use that link here.
 
 class MainClass(Unit3D):
-    URL = 'https://beyond-hd.me/'
+    URL: Final = 'https://beyond-hd.me/'
+    USER_CLASSES: Final = {}
 
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls):
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'oneurl': {'type': 'string'},
@@ -31,21 +36,22 @@ class MainClass(Unit3D):
             }
         }
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         site_config = entry['site_config']
         oneurl = site_config.get('oneurl')
         return [
             Work(
                 url=oneurl or '/',
-                method='get',
+                method=self.sign_in_by_get,
                 succeed_regex=['<title>BeyondHD | Beyond Your Imagination</title>'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['https://beyond-hd.me']
             )
         ]
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': '/([^.]+\.\d+)/badges"',
             'detail_sources': {

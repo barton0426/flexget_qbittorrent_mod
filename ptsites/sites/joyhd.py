@@ -1,17 +1,20 @@
+from typing import Final
+
 from ..schema.nexusphp import Visit
 from ..utils import net_utils
 
 
 class MainClass(Visit):
-    URL = 'https://www.joyhd.net/'
-    USER_CLASSES = {
+    URL: Final = 'https://www.joyhd.net/'
+    USER_CLASSES: Final = {
         'downloaded': [644245094400, 5368709120000],
         'share_ratio': [4.5, 6],
         'days': [175, 350]
     }
 
-    def build_selector(self):
-        selector = super().build_selector()
+    @property
+    def details_selector(self) -> dict:
+        selector = super().details_selector
         net_utils.dict_merge(selector, {
             'details': {
                 'points': {

@@ -1,21 +1,27 @@
 import re
+from typing import Final
 
-from ..schema.site_base import SignState, Work, NetworkState, SiteBase
+from ..base.entry import SignInEntry
+from ..base.request import check_network_state, NetworkState
+from ..base.sign_in import SignState, check_final_state
+from ..base.work import Work
+from ..schema.private_torrent import PrivateTorrent
+from ..utils.net_utils import get_module_name
 from ..utils.value_hanlder import handle_infinite, handle_join_date
 
 
-class MainClass(SiteBase):
-    URL = 'https://torrentdb.net'
-    USER_CLASSES = {
+class MainClass(PrivateTorrent):
+    URL: Final = 'https://torrentdb.net'
+    USER_CLASSES: Final = {
         'uploaded': [10995116277760],
         'days': [1095],
         'share_ratio': [2]
     }
 
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls):
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'login': {
@@ -31,24 +37,24 @@ class MainClass(SiteBase):
             }
         }
 
-    def build_login_workflow(self, entry, config):
+    def sign_in_build_login_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/login',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
             ),
             Work(
                 url='/login',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=['Logout'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=[''],
             )
         ]
 
-    def build_login_data(self, login, last_content):
+    def sign_in_build_login_data(self, login: dict, last_content: str) -> dict:
         return {
             '_token': re.search(r'(?<=name="_token" value=").+?(?=")', last_content).group(),
             'username': login['username'],
@@ -56,7 +62,8 @@ class MainClass(SiteBase):
             'remember': 'on',
         }
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': r'<strong class="align-middle">(.+?)</strong>',
             'detail_sources': {

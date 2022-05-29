@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import re
 import threading
 from io import BytesIO
 
 from loguru import logger
+
+from ..base.entry import SignInEntry
 
 try:
     from aip import AipOcr
@@ -18,7 +22,7 @@ qps = 1
 lock = threading.Semaphore(qps)
 
 
-def get_client(entry, config):
+def get_client(entry: SignInEntry, config: dict) -> AipOcr | None:
     if 'aipocr' not in config:
         entry.fail_with_prefix('aipocr not set in config')
         return None
@@ -36,10 +40,9 @@ def get_client(entry, config):
     return AipOcr(app_id, api_key, secret_key)
 
 
-def get_jap_ocr(img, entry, config):
-    client = get_client(entry, config)
-    if not client:
-        return None
+def get_jap_ocr(img: Image.Image, entry: SignInEntry, config: dict) -> str | None:
+    if not (client := get_client(entry, config)):
+        return
     img_byte_arr = BytesIO()
 
     if img.mode == "P":
@@ -51,20 +54,19 @@ def get_jap_ocr(img, entry, config):
             result = client.basicAccurate(img_byte_arr.getvalue(), {'language_type': 'JAP'})
     except Exception as e:
         entry.fail_with_prefix(f'baidu ocr error: {e}')
-        return None
+        return
     logger.info(result)
     if result.get('error_msg'):
         entry.fail_with_prefix(result.get('error_msg'))
-        return None
+        return
     text = ''
     for words_list in result.get('words_result'):
-        text = text + words_list.get('words')
-    return re.sub('[^\\w]|[a-zA-Z\\d]', '', text)
+        text += words_list.get('words')
+    return str.join('', re.findall(r'[\u2E80-\u9FFF]', text))
 
 
-def get_ocr_code(img, entry, config):
-    client = get_client(entry, config)
-    if not client:
+def get_ocr_code(img: Image.Image, entry: SignInEntry, config: dict) -> tuple:
+    if not (client := get_client(entry, config)):
         return None, None
 
     # transform pixel value < black_threshold to pure black
@@ -75,8 +77,7 @@ def get_ocr_code(img, entry, config):
     height = img.size[1]
     for i in range(0, width):
         for j in range(0, height):
-            noise = _detect_noise(img, i, j, width, height)
-            if noise:
+            if noise := _detect_noise(img, i, j, width, height):
                 img.putpixel((i, j), (255, 255, 255))
     img_byte_arr = BytesIO()
     img.save(img_byte_arr, format='png')
@@ -96,7 +97,7 @@ def get_ocr_code(img, entry, config):
     return code, img_byte_arr.getvalue()
 
 
-def _detect_noise(img, i, j, width, height):
+def _detect_noise(img: Image.Image, i: int, j: int, width: int, height: int) -> bool:
     if i < 25 or i > 122 or j < 15 or j > 24:
         return True
     pixel = img.getpixel((i, j))

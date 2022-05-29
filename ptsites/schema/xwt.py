@@ -1,12 +1,18 @@
-from ..schema.site_base import SiteBase, Work, SignState
+from abc import ABC
+
+from .private_torrent import PrivateTorrent
+from ..base.entry import SignInEntry
+from ..base.sign_in import check_final_state, SignState
+from ..base.work import Work
+from ..utils.net_utils import get_module_name
 from ..utils.value_hanlder import handle_infinite
 
 
-class XWT(SiteBase):
+class XWT(PrivateTorrent, ABC):
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls) -> dict:
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'login': {
@@ -22,26 +28,27 @@ class XWT(SiteBase):
             }
         }
 
-    def build_login_workflow(self, entry, config):
+    def sign_in_build_login_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/takelogin.php',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=[r'Top 5 Torrents'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['/']
             )
         ]
 
-    def build_login_data(self, login, last_content):
+    def sign_in_build_login_data(self, login: dict, last_content: str) -> dict:
         return {
             'username': login['username'],
             'password': login['password'],
             'returnto': '/'
         }
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'detail_sources': {
                 'default': {

@@ -1,22 +1,27 @@
 import re
+from typing import Final
 
-from ..schema.site_base import SignState, Work, NetworkState
+from ..base.entry import SignInEntry
+from ..base.request import check_network_state, NetworkState
+from ..base.sign_in import check_final_state, SignState, Work
 from ..schema.unit3d import Unit3D
+from ..utils.net_utils import get_module_name
 
 
 class MainClass(Unit3D):
-    URL = 'https://www.torrentseeds.org/'
-    USER_CLASSES = {
+    URL: Final = 'https://www.torrentseeds.org/'
+    USER_CLASSES: Final = {
         'uploaded': [109951162777600],
         'days': [365]
     }
 
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls) -> dict:
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
+                    'cookie': {'type': 'string'},
                     'login': {
                         'type': 'object',
                         'properties': {
@@ -30,24 +35,7 @@ class MainClass(Unit3D):
             }
         }
 
-    def build_login_workflow(self, entry, config):
-        return [
-            Work(
-                url='/login',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
-            ),
-            Work(
-                url='/login',
-                method='login',
-                succeed_regex=['Logout'],
-                check_state=('final', SignState.SUCCEED),
-                is_base_content=True,
-                response_urls=['/pages/1'],
-            )
-        ]
-
-    def build_login_data(self, login, last_content):
+    def sign_in_build_login_data(self, login: dict, last_content: str) -> dict:
         m = re.search(r'name="(?P<name>.+?)" value="(?P<value>.+?)" />\s*<button type="submit"', last_content)
         return {
             '_token': re.search(r'(?<=name="_token" value=").+?(?=")', last_content).group(),
@@ -59,6 +47,30 @@ class MainClass(Unit3D):
             m.group('name'): m.group('value'),
         }
 
-    def build_selector(self):
-        selector = super().build_selector()
-        return selector
+    def sign_in_build_login_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
+        return [
+            Work(
+                url='/login',
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
+            ),
+            Work(
+                url='/login',
+                method=self.sign_in_by_login,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
+                response_urls=['', '/pages/1'],
+            )
+        ]
+
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
+        return [
+            Work(
+                url='/',
+                method=self.sign_in_by_get,
+                succeed_regex=[('<a href="https://www.torrentseeds.org/users/(.*?)">', 1)],
+                assert_state=(check_final_state, SignState.SUCCEED),
+                use_last_content=True,
+                is_base_content=True,
+                response_urls=['', '/pages/1']
+            )
+        ]

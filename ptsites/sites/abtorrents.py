@@ -1,42 +1,49 @@
+from __future__ import annotations
+
 import ast
 import hashlib
+from typing import Final
 from urllib.parse import urljoin
 
-from ..schema.site_base import Work, SignState, NetworkState
+from requests import Response
+
+from ..base.entry import SignInEntry
+from ..base.request import check_network_state, NetworkState
+from ..base.sign_in import check_final_state, SignState, Work
 from ..schema.xbt import XBT
 
 
 class MainClass(XBT):
-    URL = 'https://abtorrents.me/'
-    USER_CLASSES = {
+    URL: Final = 'https://abtorrents.me/'
+    USER_CLASSES: Final = {
         'uploaded': [536870912000],
         'share_ratio': [1.5],
         'days': [90],
     }
 
-    def build_login_workflow(self, entry, config):
+    def sign_in_build_login_workflow(self, entry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/login.php?returnto=%2F',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
             ),
             Work(
                 url='/simpleCaptcha.php',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
             ),
             Work(
                 url='/takelogin.php',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=['Logout'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['/']
             )
         ]
 
-    def sign_in_by_login(self, entry, config, work, last_content):
+    def sign_in_by_login(self, entry: SignInEntry, config: dict, work: Work, last_content: str) -> Response | None:
         if not (login := entry['site_config'].get('login')):
             entry.fail_with_prefix('Login data not found!')
             return
@@ -44,7 +51,7 @@ class MainClass(XBT):
         target = {'light bulb': '44c7285b', 'house': 'b9a403b9', 'musical note': '3a8441da', 'key': '2faefa2b', 'bug':
             'c2ba10a5', 'heart': 'bed5a0e2', 'clock': '99d86267', 'world': 'ededf171'}[last_content['text']]
         for hash in last_content['images']:
-            if hashlib.shake_128(self._request(entry, 'get', urljoin(entry['url'], '/simpleCaptcha.php?hash=' + hash))
+            if hashlib.shake_128(self.request(entry, 'get', urljoin(entry['url'], '/simpleCaptcha.php?hash=' + hash))
                                          .content).hexdigest(4) == target:
                 break
         data = {
@@ -55,4 +62,4 @@ class MainClass(XBT):
             'submitme': 'X',
             'returnto': '/'
         }
-        return self._request(entry, 'post', work.url, data=data)
+        return self.request(entry, 'post', work.url, data=data)

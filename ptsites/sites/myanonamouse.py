@@ -1,21 +1,30 @@
+from __future__ import annotations
+
 import re
+from typing import Final
 
-from ..schema.site_base import SiteBase, Work, SignState, NetworkState
-from ..utils.value_hanlder import handle_join_date,handle_infinite
+from requests import Response
+
+from ..base.entry import SignInEntry
+from ..base.request import check_network_state, NetworkState
+from ..base.sign_in import check_final_state, SignState, Work
+from ..schema.private_torrent import PrivateTorrent
+from ..utils.net_utils import get_module_name
+from ..utils.value_hanlder import handle_join_date, handle_infinite
 
 
-class MainClass(SiteBase):
-    URL = 'https://www.myanonamouse.net/'
-    USER_CLASSES = {
+class MainClass(PrivateTorrent):
+    URL: Final = 'https://www.myanonamouse.net/'
+    USER_CLASSES: Final = {
         'uploaded': [26843545600],
         'share_ratio': [2.0],
         'days': [28]
     }
 
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls):
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'login': {
@@ -31,26 +40,26 @@ class MainClass(SiteBase):
             }
         }
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/login.php',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
             ),
             Work(
                 url='/takelogin.php',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=['Log Out'],
                 response_urls=['/u/'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 t_regex='<input type="hidden" name="t" value="([^"]+)"',
                 a_regex='<input type="hidden" name="a" value="([^"]+)"',
             )
         ]
 
-    def sign_in_by_login(self, entry, config, work, last_content):
+    def sign_in_by_login(self, entry: SignInEntry, config: dict, work: Work, last_content: str) -> Response | None:
         if not (login := entry['site_config'].get('login')):
             entry.fail_with_prefix('Login data not found!')
             return
@@ -63,9 +72,10 @@ class MainClass(SiteBase):
             'password': login['password'],
             'rememberMe': 'yes'
         }
-        return self._request(entry, 'post', work.url, data=data)
+        return self.request(entry, 'post', work.url, data=data)
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': '/u/(\\d+)',
             'detail_sources': {
@@ -89,7 +99,7 @@ class MainClass(SiteBase):
                     'handle': handle_infinite
                 },
                 'points': {
-                    'regex': 'Bonus:\s+([\\d,.]+)'
+                    'regex': r'Bonus:\s+([\d,.]+)'
                 },
                 'join_date': {
                     'regex': 'Join date\\s*?(\\d{4}-\\d{2}-\\d{2})',

@@ -1,18 +1,27 @@
+from __future__ import annotations
+
 import ast
 import json
+from typing import Final
 from urllib.parse import urljoin
 
-from ..schema.site_base import SiteBase, Work, SignState, NetworkState
+from requests import Response
+
+from ..base.entry import SignInEntry
+from ..base.request import check_network_state, NetworkState
+from ..base.sign_in import check_final_state, SignState, Work
+from ..schema.private_torrent import PrivateTorrent
 from ..utils import net_utils
+from ..utils.net_utils import get_module_name
 
 
-class MainClass(SiteBase):
-    URL = 'https://milkie.cc/'
+class MainClass(PrivateTorrent):
+    URL: Final = 'https://milkie.cc/'
 
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls):
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'login': {
@@ -28,19 +37,19 @@ class MainClass(SiteBase):
             },
         }
 
-    def build_login_workflow(self, entry, config):
+    def sign_in_build_login_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/api/v1/auth/sessions',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=['{"token":".*"}'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['/api/v1/auth/sessions'],
             )
         ]
 
-    def sign_in_by_login(self, entry, config, work, last_content):
+    def sign_in_by_login(self, entry: SignInEntry, config: dict, work: Work, last_content: str) -> Response | None:
         if not (login := entry['site_config'].get('login')):
             entry.fail_with_prefix('Login data not found!')
             return
@@ -48,14 +57,14 @@ class MainClass(SiteBase):
             'email': login['username'],
             'password': login['password'],
         }
-        login_response = self._request(entry, 'post', work.url, data=data)
-        self.requests.headers.update({'authorization': 'Bearer ' + ast.literal_eval(login_response.text)['token']})
+        login_response = self.request(entry, 'post', work.url, data=data)
+        self.session.headers.update({'authorization': 'Bearer ' + ast.literal_eval(login_response.text)['token']})
         return login_response
 
-    def get_details(self, entry, config):
+    def get_details(self, entry: SignInEntry, config: dict) -> None:
         link = urljoin(entry['url'], '/api/v1/auth')
-        detail_response = self._request(entry, 'get', link)
-        network_state = self.check_network_state(entry, link, detail_response)
+        detail_response = self.request(entry, 'get', link)
+        network_state = check_network_state(entry, link, detail_response)
         if network_state != NetworkState.SUCCEED:
             return
         detail_content = net_utils.decode(detail_response)

@@ -1,18 +1,21 @@
+from typing import Final
+
 from ..schema.xbtit import XBTIT
 from ..utils import net_utils
 from ..utils.value_hanlder import handle_infinite
 
 
 class MainClass(XBTIT):
-    URL = 'https://gay-torrents.org/'
-    SUCCEED_REGEX = 'Logout'
-    USER_CLASSES = {
+    URL: Final = 'https://gay-torrents.org/'
+    SUCCEED_REGEX: Final = 'Logout'
+    USER_CLASSES: Final = {
         'uploaded': [268435456000],
         'share_ratio': [2]
     }
 
-    def build_selector(self):
-        selector = super().build_selector()
+    @property
+    def details_selector(self) -> dict:
+        selector = super().details_selector
         net_utils.dict_merge(selector, {
             'user_id': r'<li><a href="usercp\.php\?uid=(\d+)">My Panel</a>',
             'detail_sources': {

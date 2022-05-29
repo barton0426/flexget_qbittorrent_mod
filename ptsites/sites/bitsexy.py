@@ -1,29 +1,34 @@
 import re
+from typing import Final
 
-from ..schema.site_base import SiteBase, Work, SignState
+from ..base.entry import SignInEntry
+from ..base.sign_in import check_final_state, SignState
+from ..base.work import Work
+from ..schema.private_torrent import PrivateTorrent
 from ..utils.value_hanlder import handle_join_date
 
 
-class MainClass(SiteBase):
-    URL = 'https://bitsexy.org/'
-    USER_CLASSES = {
+class MainClass(PrivateTorrent):
+    URL: Final = 'https://bitsexy.org/'
+    USER_CLASSES: Final = {
         'uploaded': [536_870_912_000],
         'share_ratio': [3.05],
         'days': [28],
     }
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/',
-                method='get',
+                method=self.sign_in_by_get,
                 succeed_regex=['Logout'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
             ),
         ]
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': fr'''(?x)(?<= {re.escape('userdetails.php?id=')})
                                 (. +?)

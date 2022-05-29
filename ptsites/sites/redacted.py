@@ -1,29 +1,33 @@
+from typing import Final
+
+from ..base.entry import SignInEntry
+from ..base.sign_in import check_final_state, SignState, Work
 from ..schema.gazelle import Gazelle
-from ..schema.site_base import Work, SignState
 from ..utils import net_utils
 
 
 class MainClass(Gazelle):
-    URL = 'https://redacted.ch/'
-    USER_CLASSES = {
+    URL: Final = 'https://redacted.ch/'
+    USER_CLASSES: Final = {
         'uploaded': [536870912000],
         'share_ratio': [0.65],
         'days': [56]
     }
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/',
-                method='get',
+                method=self.sign_in_by_get,
                 succeed_regex=['<h1 class="hidden">Redacted</h1>'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True
             )
         ]
 
-    def build_selector(self):
-        selector = super().build_selector()
+    @property
+    def details_selector(self) -> dict:
+        selector = super().details_selector
         net_utils.dict_merge(selector, {
             'detail_sources': {
                 'default': {

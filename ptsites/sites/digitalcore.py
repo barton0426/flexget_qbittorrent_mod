@@ -1,34 +1,39 @@
 import json
+from typing import Final
 from urllib.parse import urljoin
 
-from ..schema.site_base import SiteBase, Work, SignState, NetworkState
+from ..base.entry import SignInEntry
+from ..base.request import NetworkState, check_network_state
+from ..base.sign_in import SignState, check_final_state
+from ..base.work import Work
+from ..schema.private_torrent import PrivateTorrent
 from ..utils import net_utils
 
 
-class MainClass(SiteBase):
-    URL = 'https://digitalcore.club/'
-    USER_CLASSES = {
+class MainClass(PrivateTorrent):
+    URL: Final = 'https://digitalcore.club/'
+    USER_CLASSES: Final = {
         'uploaded': [1_288_490_188_800],
         'share_ratio': [1.1],
         'days': [210],
     }
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/api/v1/status?timeSinceLastCheck=0',
-                method='get',
+                method=self.sign_in_by_get,
                 succeed_regex=['user'],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
             ),
         ]
 
-    def get_details(self, entry, config):
+    def get_details(self, entry: SignInEntry, config: dict) -> None:
         link = urljoin(entry['url'],
                        '/api/v1/users/{}'.format(self.get_user_id(entry, '"id":(.+?),', entry['base_content'])))
-        detail_response = self._request(entry, 'get', link)
-        network_state = self.check_network_state(entry, link, detail_response)
+        detail_response = self.request(entry, 'get', link)
+        network_state = check_network_state(entry, link, detail_response)
         if network_state != NetworkState.SUCCEED:
             return
         detail_content = net_utils.decode(detail_response)

@@ -1,22 +1,31 @@
-from .site_base import SiteBase, Work, SignState
+from abc import ABC, abstractmethod
+
+from .private_torrent import PrivateTorrent
+from ..base.entry import SignInEntry
+from ..base.sign_in import SignState, check_final_state
+from ..base.work import Work
 from ..utils.value_hanlder import handle_join_date
 
 
-class AvistaZ(SiteBase):
-    SUCCEED_REGEX = None
+class AvistaZ(PrivateTorrent, ABC):
+    @property
+    @abstractmethod
+    def SUCCEED_REGEX(self) -> str:
+        pass
 
-    def build_workflow(self, entry, config):
+    def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/',
-                method='get',
+                method=self.sign_in_by_get,
                 succeed_regex=[self.SUCCEED_REGEX],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True
             )
         ]
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': '/profile/(.*?)"',
             'detail_sources': {
@@ -30,32 +39,29 @@ class AvistaZ(SiteBase):
             },
             'details': {
                 'uploaded': {
-                    'regex': ('([\\d.]+ [ZEPTGMK]B).*?([\\d.]+ [ZEPTGMK]B).*?([\\d.]+)', 1)
+                    'regex': (r'([\d.]+ [ZEPTGMK]B).*?([\d.]+ [ZEPTGMK]B).*?([\d.]+)', 1)
                 },
                 'downloaded': {
-                    'regex': ('([\\d.]+ [ZEPTGMK]B).*?([\\d.]+ [ZEPTGMK]B).*?([\\d.]+)', 2)
+                    'regex': (r'([\d.]+ [ZEPTGMK]B).*?([\d.]+ [ZEPTGMK]B).*?([\d.]+)', 2)
                 },
                 'share_ratio': {
-                    'regex': ('([\\d.]+ [ZEPTGMK]B).*?([\\d.]+ [ZEPTGMK]B).*?([\\d.]+)', 3)
+                    'regex': (r'([\d.]+ [ZEPTGMK]B).*?([\d.]+ [ZEPTGMK]B).*?([\d.]+)', 3)
                 },
                 'points': {
-                    'regex': 'Bonus:.([\\d.]+)'
+                    'regex': r'Bonus:.([\d.]+)'
                 },
                 'join_date': {
-                    'regex': 'Joined.(.*? \\d{4})',
+                    'regex': r'Joined.(.*? \d{4})',
                     'handle': handle_join_date
                 },
                 'seeding': {
-                    'regex': 'Seeding:.(\\d+)'
+                    'regex': r'Seeding:.(\d+)'
                 },
                 'leeching': {
-                    'regex': 'Leeching:.(\\d+)'
+                    'regex': r'Leeching:.(\d+)'
                 },
                 'hr': {
-                    'regex': 'Hit & Run:.(\\d+)'
+                    'regex': r'Hit & Run:.(\d+)'
                 }
             }
         }
-
-    def handle_points(self, value):
-        return value.replace(' ', '')

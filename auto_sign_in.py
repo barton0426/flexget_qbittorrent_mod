@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from flexget import plugin
-from flexget.entry import Entry
 from flexget.event import event
 from flexget.task import Task
 from loguru import logger
 
 from .ptsites import executor
+from .ptsites.base.entry import SignInEntry
 from .ptsites.utils.details_report import DetailsReport
 
 
@@ -44,18 +46,18 @@ class PluginAutoSignIn:
         config.setdefault('sites', {})
         return config
 
-    def on_task_input(self, task: Task, config: dict) -> list[Entry]:
-        config: dict = self.prepare_config(config)
-        sites: dict = config.get('sites')
+    def on_task_input(self, task: Task, config: dict) -> list[SignInEntry]:
+        config = self.prepare_config(config)
+        sites: dict = config['sites']
 
-        entries: list[Entry] = []
+        entries: list[SignInEntry] = []
 
         for site_name, site_configs in sites.items():
             if not isinstance(site_configs, list):
-                site_configs: list = [site_configs]
+                site_configs = [site_configs]
             for sub_site_config in site_configs:
-                entry: Entry = Entry(
-                    title='{} {}'.format(site_name, datetime.now().date()),
+                entry = SignInEntry(
+                    title=f'{site_name} {datetime.now().date()}',
                     url=''
                 )
                 entry['site_name'] = site_name
@@ -73,9 +75,9 @@ class PluginAutoSignIn:
         date_now: str = str(datetime.now().date())
         for entry in task.all_entries:
             if date_now not in entry['title']:
-                entry.reject('{} out of date!'.format(entry['title']))
-        with ThreadPoolExecutor(max_workers=max_workers) as threadExecutor:
-            for entry, feature in [(entry, threadExecutor.submit(executor.sign_in, entry, config))
+                entry.reject(f'{entry["title"]} out of date!')
+        with ThreadPoolExecutor(max_workers=max_workers) as thread_executor:
+            for entry, feature in [(entry, thread_executor.submit(executor.sign_in, entry, config))
                                    for entry in task.accepted]:
                 try:
                     feature.result()

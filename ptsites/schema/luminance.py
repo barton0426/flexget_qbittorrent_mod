@@ -1,14 +1,20 @@
 import re
+from abc import ABC
 
-from ..schema.site_base import SiteBase, Work, SignState, NetworkState
+from .private_torrent import PrivateTorrent
+from ..base.entry import SignInEntry
+from ..base.request import NetworkState, check_network_state
+from ..base.sign_in import SignState, check_final_state
+from ..base.work import Work
+from ..utils.net_utils import get_module_name
 from ..utils.value_hanlder import handle_infinite, handle_join_date
 
 
-class Luminance(SiteBase):
+class Luminance(PrivateTorrent, ABC):
     @classmethod
-    def build_sign_in_schema(cls):
+    def sign_in_build_schema(cls):
         return {
-            cls.get_module_name(): {
+            get_module_name(cls): {
                 'type': 'object',
                 'properties': {
                     'login': {
@@ -24,24 +30,25 @@ class Luminance(SiteBase):
             }
         }
 
-    def build_login_workflow(self, entry, config):
+    def sign_in_build_login_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
         return [
             Work(
                 url='/login',
-                method='get',
-                check_state=('network', NetworkState.SUCCEED),
+                method=self.sign_in_by_get,
+                assert_state=(check_network_state, NetworkState.SUCCEED),
             ),
             Work(
                 url='/login',
-                method='login',
+                method=self.sign_in_by_login,
                 succeed_regex=[r'''(?x)Logout | Kilpés'''],
-                check_state=('final', SignState.SUCCEED),
+                assert_state=(check_final_state, SignState.SUCCEED),
                 is_base_content=True,
                 response_urls=['/'],
             )
         ]
 
-    def build_selector(self):
+    @property
+    def details_selector(self) -> dict:
         return {
             'user_id': fr'''(?x)(?<= {re.escape('user.php?id=')})
                                 (. +?)

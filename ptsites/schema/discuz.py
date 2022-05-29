@@ -1,10 +1,13 @@
-from .site_base import SiteBase
+from abc import ABC
+
+from .private_torrent import PrivateTorrent
 
 
-class Discuz(SiteBase):
-    def build_selector(self):
+class Discuz(PrivateTorrent, ABC):
+    @property
+    def details_selector(self) -> dict:
         return {
-            'user_id': 'home.php\\?mod=space&amp;uid=(\\d+)',
+            'user_id': r'home\.php\?mod=space&amp;uid=(\d+)',
             'detail_sources': {
                 'default': {
                     'link': 'home.php?mod=space&amp;uid={}',
@@ -16,25 +19,25 @@ class Discuz(SiteBase):
             },
             'details': {
                 'uploaded': {
-                    'regex': '上传量.*?([\\d.]+ ?[ZEPTGMK]?i?B)'
+                    'regex': r'上传量.*?([\d.]+ ?[ZEPTGMK]?i?B)'
                 },
                 'downloaded': {
-                    'regex': '下载量.*?([\\d.]+ ?[ZEPTGMK]?i?B)'
+                    'regex': r'下载量.*?([\d.]+ ?[ZEPTGMK]?i?B)'
                 },
                 'share_ratio': {
-                    'regex': '保种率.*?([\\d.,]+)'
+                    'regex': r'保种率.*?([\d.,]+)'
                 },
                 'points': {
-                    'regex': '积分([\\d.,]+)金币'
+                    'regex': r'积分([\d.,]+)金币'
                 },
                 'join_date': {
-                    'regex': '注册时间(\\d{4}-\\d{1,2}-\\d{1,2})',
+                    'regex': r'注册时间(\d{4}-\d{1,2}-\d{1,2})',
                 },
                 'seeding': {
-                    'regex': '当前做种数 : (\\d+)'
+                    'regex': r'当前做种数 : (\d+)'
                 },
                 'leeching': {
-                    'regex': '当前下载数 : (\\d+)'
+                    'regex': r'当前下载数 : (\d+)'
                 },
                 'hr': None,
             }
