@@ -2,7 +2,7 @@ FROM docker.io/python:3.9.7-slim
 ENV PYTHONUNBUFFERED 1
 
 RUN \
-    echo "**** install build packages ****" && \
+#    echo "**** install build packages ****" && \
     apt update && apt install -y gcc cargo
 
 WORKDIR /wheels
@@ -30,7 +30,7 @@ COPY --from=0 /wheels /wheels
 COPY ./root/ /
 
 RUN \
-    echo "**** install runtime packages ****" && \
+#    echo "**** install runtime packages ****" && \
     apt update && apt install -y --no-install-recommends \
     	wget unzip ca-certificates && \
     pip install -U pip && \
@@ -48,7 +48,7 @@ RUN \
                 ply \
                 chardet && \
     rm -rf /wheels
-    echo "**** create abc user and make our folders ****" && \
+#   echo "**** create abc user and make our folders ****" && \
     mkdir -p /home/flexget && \
     groupmod -g 1000 users && \
     useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
