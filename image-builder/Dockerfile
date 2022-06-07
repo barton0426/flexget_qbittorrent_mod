@@ -67,15 +67,15 @@ RUN \
                 chardet && \
     rm -rf /wheels
 
-ADD link_chromium .
+# ADD link_chromium .
 
 # add local files
 COPY ./root/ /
 
 RUN \
  echo "**** create abc user and make our folders ****" && \
- python link_chromium && \
- rm link_chromium && \
+# python link_chromium && \
+# rm link_chromium && \
  groupmod -g 1000 users && \
  useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
  usermod -G users flexget && \
