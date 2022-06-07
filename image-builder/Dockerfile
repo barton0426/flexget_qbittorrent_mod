@@ -43,7 +43,7 @@ RUN \
     echo "**** install runtime packages ****" && \
     apk add --no-cache \
         shadow \
-        chromium \
+#        chromium \
         ca-certificates \
         tzdata && \
     rm -rf /var/cache/apk/*
