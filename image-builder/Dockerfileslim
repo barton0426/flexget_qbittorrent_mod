@@ -3,8 +3,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN \
     echo "**** install build packages ****" && \
-    apt update && apt install -y \
-        cargo
+    apt update && apt install -y gcc cargo
 
 WORKDIR /wheels
 
@@ -18,8 +17,6 @@ RUN \
     pip wheel matplotlib && \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
-    pip wheel pyppeteer && \
-    pip wheel pyppeteer_stealth && \
     pip wheel ply && \
     pip wheel chardet
 
@@ -30,8 +27,12 @@ LABEL maintainer="barton0426@msn.com" \
 ENV PYTHONUNBUFFERED 1
 
 COPY --from=0 /wheels /wheels
+COPY ./root/ /
 
 RUN \
+    echo "**** install runtime packages ****" && \
+    apt update && apt install -y --no-install-recommends \
+    	wget unzip ca-certificates && \
     pip install -U pip && \
     pip install --no-cache-dir \
                 --no-index \
@@ -44,19 +45,9 @@ RUN \
                 matplotlib \
                 fuzzywuzzy \
                 python-Levenshtein \
-                pyppeteer \
-                pyppeteer_stealth \
                 ply \
                 chardet && \
     rm -rf /wheels
-
-COPY ./root/ /
-
-RUN \
-    echo "**** install runtime packages ****" && \
-    apt update && apt install -y --no-install-recommends \
-    	wget \
-    	unzip && \
     echo "**** create abc user and make our folders ****" && \
     mkdir -p /home/flexget && \
     groupmod -g 1000 users && \
@@ -84,4 +75,3 @@ WORKDIR /config
 EXPOSE 3539 3539/tcp
 
 ENTRYPOINT ["sh","-c","/usr/bin/entrypoint.sh"]
-
