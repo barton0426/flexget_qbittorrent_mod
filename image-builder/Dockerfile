@@ -28,8 +28,6 @@ RUN \
     pip wheel matplotlib && \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
-    pip wheel pyppeteer && \
-    pip wheel pyppeteer_stealth && \
     pip wheel ply && \
     pip wheel chardet
 
@@ -65,8 +63,6 @@ RUN \
                 matplotlib \
                 fuzzywuzzy \
                 python-Levenshtein \
-                pyppeteer \
-                pyppeteer_stealth \
                 ply \
                 chardet && \
     rm -rf /wheels
