@@ -77,7 +77,7 @@ RUN \
 # python link_chromium && \
 # rm link_chromium && \
  groupmod -g 1000 users && \
- useradd -u 1011 -U -d /home/flexget -s /bin/sh flexget && \
+ useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
  usermod -G users flexget && \
  chown -R flexget:flexget /home/flexget && \
  chmod +x /usr/bin/entrypoint.sh && \
