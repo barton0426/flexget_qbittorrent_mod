@@ -79,7 +79,6 @@ RUN \
  groupmod -g 1000 users && \
  useradd -u 1011 -U -d /home/flexget -s /bin/sh flexget && \
  usermod -G users flexget && \
- mkdir /home/flexget && \
  chown -R flexget:flexget /home/flexget && \
  chmod +x /usr/bin/entrypoint.sh && \
  cd / && \
