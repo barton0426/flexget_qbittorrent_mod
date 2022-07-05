@@ -1,4 +1,4 @@
-FROM docker.io/python:3.10-alpine3.15
+FROM docker.io/python:3.10-alpine3.14
 ENV PYTHONUNBUFFERED 1
 
 RUN \
@@ -32,7 +32,7 @@ RUN \
     pip wheel chardet
 
 
-FROM docker.io/python:3.10-alpine3.15
+FROM docker.io/python:3.10-alpine3.14
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
