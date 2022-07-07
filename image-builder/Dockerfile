@@ -76,6 +76,7 @@ RUN \
  echo "**** create abc user and make our folders ****" && \
 # python link_chromium && \
 # rm link_chromium && \
+ mkdir -p /home/flexget && \
  groupmod -g 1000 users && \
  useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
  usermod -G users flexget && \
