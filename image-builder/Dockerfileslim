@@ -18,8 +18,8 @@ RUN \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
     pip wheel ply && \
-    pip wheel chardet
-
+    pip wheel chardet && \
+    pip wheel colorama
 
 FROM docker.io/python:3.9.7-slim
 LABEL maintainer="barton0426@msn.com" \
@@ -46,7 +46,8 @@ RUN \
                 fuzzywuzzy \
                 python-Levenshtein \
                 ply \
-                chardet && \
+                chardet \
+				colorama && \
     rm -rf /wheels && \
     echo "**** create abc user and make our folders ****" && \
     mkdir -p /home/flexget && \

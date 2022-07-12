@@ -29,7 +29,8 @@ RUN \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
     pip wheel ply && \
-    pip wheel chardet
+    pip wheel chardet &&\
+	pip wheel colorama
 
 
 FROM docker.io/python:3.10-alpine3.14
@@ -64,7 +65,8 @@ RUN \
                 fuzzywuzzy \
                 python-Levenshtein \
                 ply \
-                chardet && \
+                chardet \
+				colorama && \
     rm -rf /wheels
 
 # ADD link_chromium .
