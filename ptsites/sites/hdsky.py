@@ -35,6 +35,19 @@ class MainClass(NexusPHP):
     }
 
     @classmethod
+    def sign_in_build_schema(cls) -> dict:
+        return {
+            get_module_name(cls): {
+                'type': 'object',
+                'properties': {
+                    'cookie': {'type': 'string'},
+                    'join_date': {'type': 'string', 'format': 'date'}
+                },
+                'additionalProperties': False
+            }
+        }
+
+    @classmethod
     def reseed_build_schema(cls) -> dict:
         return {
             get_module_name(cls): {
@@ -99,7 +112,18 @@ class MainClass(NexusPHP):
     def details_selector(self) -> dict:
         selector = super().details_selector
         net_utils.dict_merge(selector, {
+            'user_id': None,
+            'detail_sources': {
+                'default': {
+                    'link': None,
+                    'elements': {
+                        'bar': '#info_block > tbody > tr > td > table > tbody > tr > td:nth-child(1) > span',
+                        'table': None
+                    }
+                }
+            },
             'details': {
+                'join_date': None,
                 'hr': None
             }
         })
