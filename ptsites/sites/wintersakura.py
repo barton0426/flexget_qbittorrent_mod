@@ -3,14 +3,15 @@ from typing import Final
 from ..base.reseed import ReseedPasskey
 from ..schema.nexusphp import Attendance
 from ..utils import net_utils
+from ..utils.value_handler import size
 
 
 class MainClass(Attendance, ReseedPasskey):
-    URL: Final = 'https://lemonhd.org/'
+    URL: Final = 'https://wintersakura.net/'
     USER_CLASSES: Final = {
-        'downloaded': [2199023255552, 8796093022208],
-        'share_ratio': [4, 5.5],
-        'days': [175, 364]
+        'downloaded': [size(10, 'TiB')],
+        'share_ratio': [9.5],
+        'points': [2800000],
     }
 
     @property
@@ -20,17 +21,14 @@ class MainClass(Attendance, ReseedPasskey):
             'detail_sources': {
                 'default': {
                     'elements': {
-                        'bar': '#info_block'
+                        'table': '#outer > div > table:last-of-type'
                     }
                 }
             },
             'details': {
-                'seeding': {
-                    'regex': '做种数.*?(\\d+)'
+                'points': {
+                    'regex': (r'(做种积分).*?([\d,.]+)', 2)
                 },
-                'leeching': {
-                    'regex': '下载数.*?(\\d+)'
-                }
             }
         })
         return selector
