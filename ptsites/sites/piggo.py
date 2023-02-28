@@ -30,7 +30,7 @@ class MainClass(AttendanceHR, ReseedPasskey):
             'detail_sources': {
                 'default': {
                     'elements': {
-                        'table': '#outer table.main'
+                        'bar': '#info_block > tbody > tr > td > table > tbody > tr > td:nth-child(2) > span',
                     }
                 }
             },
