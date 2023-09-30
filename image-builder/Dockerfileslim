@@ -1,4 +1,4 @@
-FROM docker.io/python:3.9.7-slim
+FROM python
 ENV PYTHONUNBUFFERED 1
 
 RUN \
@@ -21,13 +21,13 @@ RUN \
     pip wheel chardet && \
     pip wheel colorama
 
-FROM docker.io/python:3.9.7-slim
+FROM python
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
 
 COPY --from=0 /wheels /wheels
-COPY ./root/ /
+COPY root/ /
 
 RUN \
     echo "**** install runtime packages ****" && \
@@ -48,14 +48,15 @@ RUN \
                 ply \
                 chardet \
 				colorama && \
-    rm -rf /wheels && \
-    echo "**** create abc user and make our folders ****" && \
-    mkdir -p /home/flexget && \
+    echo "**** create flexget user and make our folders ****" && \
+    mkdir /home/flexget && \
     groupmod -g 1000 users && \
     useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
     usermod -G users flexget && \
     chown -R flexget:flexget /home/flexget && \
     chmod +x /usr/bin/entrypoint.sh && \
+    rm -rf /wheels && \
+
     cd / && \
     wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
     mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
