@@ -1,20 +1,9 @@
-FROM docker.io/python:3.10-alpine3.14
+FROM python
 ENV PYTHONUNBUFFERED 1
 
 RUN \
-    # sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
     echo "**** install build packages ****" && \
-    apk add --no-cache --upgrade \
-        build-base \
-        libffi-dev \
-        openssl-dev \
-        zlib-dev \
-        jpeg-dev \
-        freetype-dev \
-        libpng-dev \
-        rust \
-        cargo
+    apt update && apt install -y gcc cargo
 
 WORKDIR /wheels
 
@@ -29,29 +18,21 @@ RUN \
     pip wheel fuzzywuzzy && \
     pip wheel python-Levenshtein && \
     pip wheel ply && \
-    pip wheel chardet &&\
-	pip wheel colorama
+    pip wheel chardet && \
+    pip wheel colorama
 
-
-FROM docker.io/python:3.10-alpine3.14
+FROM python
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
 
-RUN \
-    # sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
-    echo "**** install runtime packages ****" && \
-    apk add --no-cache \
-        shadow \
-#        chromium \
-        ca-certificates \
-        tzdata && \
-    rm -rf /var/cache/apk/*
-
 COPY --from=0 /wheels /wheels
+COPY root/ /
 
 RUN \
+    echo "**** install runtime packages ****" && \
+    apt update && apt install -y --no-install-recommends \
+    	wget unzip ca-certificates && \
     pip install -U pip && \
     pip install --no-cache-dir \
                 --no-index \
@@ -67,30 +48,23 @@ RUN \
                 ply \
                 chardet \
 				colorama && \
-    rm -rf /wheels
+    echo "**** create flexget user and make our folders ****" && \
+    mkdir /home/flexget && \
+    groupmod -g 1000 users && \
+    useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
+    usermod -G users flexget && \
+    chown -R flexget:flexget /home/flexget && \
+    chmod +x /usr/bin/entrypoint.sh && \
+    rm -rf /wheels && \
 
-# ADD link_chromium .
-
-# add local files
-COPY ./root/ /
-
-RUN \
- echo "**** create abc user and make our folders ****" && \
-# python link_chromium && \
-# rm link_chromium && \
- mkdir -p /home/flexget && \
- groupmod -g 1000 users && \
- useradd -u 911 -U -d /home/flexget -s /bin/sh flexget && \
- usermod -G users flexget && \
- chown -R flexget:flexget /home/flexget && \
- chmod +x /usr/bin/entrypoint.sh && \
- cd / && \
- wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
- mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
- wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
- wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
- cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
- rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE
+    cd / && \
+    wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
+    mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
+    wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
+    wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
+    cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
+    rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE && \
+    apt purge -y wget unzip && apt autoremove -y && rm -rf /var/lib/apt/lists/*
 
 ENV FG_WEBUI_PASSWD Qwer@1357
 ENV TZ Asia/Shanghai
@@ -103,4 +77,3 @@ WORKDIR /config
 EXPOSE 3539 3539/tcp
 
 ENTRYPOINT ["sh","-c","/usr/bin/entrypoint.sh"]
-
