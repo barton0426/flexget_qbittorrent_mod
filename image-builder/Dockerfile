@@ -58,7 +58,7 @@ RUN \
     rm -rf /wheels && \
 
     cd / && \
-    wget https://github.com/barton0426/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
+    wget https://github.com/madwind/flexget_qbittorrent_mod/archive/refs/heads/master.zip && unzip master.zip && \
     mv flexget_qbittorrent_mod-master plugins && rm master.zip && \
     wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
     wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
