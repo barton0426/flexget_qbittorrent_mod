@@ -7,10 +7,11 @@ from ..utils.value_handler import size
 
 
 class MainClass(Attendance, ReseedPasskey):
-    URL: Final = 'https://www.ptlsp.com/'
+    URL: Final = 'https://kufei.org/'
     USER_CLASSES: Final = {
-        'downloaded': [size(1000, 'GiB'), size(3000, 'GiB')],
-        'share_ratio': [6, 9],
+        'downloaded': [size(1.92, 'TiB'), size(10, 'TiB')],
+        'share_ratio': [4, 6],
+        'points': [1200000, 2000000],
         'days': [280, 700]
     }
 
@@ -20,8 +21,8 @@ class MainClass(Attendance, ReseedPasskey):
         net_utils.dict_merge(selector, {
             'details': {
                 'points': {
-                    'regex': r'莉莉.*?([\d,.]+)'
-                }
+                    'regex': (r'(做种积分).*?([\d,.]+)', 2)
+                },
             }
         })
         return selector
