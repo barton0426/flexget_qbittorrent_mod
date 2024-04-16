@@ -2,23 +2,24 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from flexget.entry import Entry
+from requests import Response, request
 from typing import Final
 from urllib.parse import urljoin
 
-from requests import Response
-
 from ..base.entry import SignInEntry
-from ..base.reseed import ReseedPasskey
+from ..base.reseed import Reseed
 from ..base.sign_in import check_final_state, SignState, Work
 from ..schema.nexusphp import NexusPHP
 from ..utils.net_utils import get_module_name
 from ..utils.value_handler import handle_infinite
 
 
-class MainClass(NexusPHP, ReseedPasskey):
+class MainClass(NexusPHP, Reseed):
     URL: Final = 'https://kp.m-team.cc/'
     PROFILE_URL = '/api/member/profile'
     MY_PEER_STATUS = '/api/tracker/myPeerStatus'
+    GEN_DL_TOKEN = '/api/torrent/genDlToken'
     SUCCEED_REGEX = 'SUCCESS'
     USER_CLASSES: Final = {
         'downloaded': [2147483648000, 3221225472000],
@@ -56,7 +57,8 @@ class MainClass(NexusPHP, ReseedPasskey):
                 ',', ''),
             'seeding': str(my_peer_status_response_json.get('data').get('seeder') or 0).replace(',', ''),
             'leeching': str(my_peer_status_response_json.get('data').get('leecher') or 0).replace(',',
-                                                                                                  '')
+                                                                                                  ''),
+            'hr': '*'
         }
 
     def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
@@ -77,6 +79,12 @@ class MainClass(NexusPHP, ReseedPasskey):
                         work: Work,
                         last_content: str = None,
                         ) -> Response | None:
+        # update_last_browse_response = self.request(entry, 'POST', urljoin(self.URL, '/api/member/updateLastBrowse'))
+        # if update_last_browse_response.status_code != 200 or update_last_browse_response.json().get(
+        #         'message') != 'SUCCESS':
+        #     entry.fail_with_prefix(f'update_last_browse failed!')
+        #     return
+
         response = super().sign_in_by_post(entry, config, work, last_content)
         response_json = response.json()
         last_browse = response_json.get('data').get('memberStatus').get('lastBrowse')
@@ -98,3 +106,22 @@ class MainClass(NexusPHP, ReseedPasskey):
 
     def get_messages(self, entry: SignInEntry, config: dict) -> None:
         return
+
+    @classmethod
+    def reseed_build_schema(cls) -> dict:
+        return {
+            get_module_name(cls): {
+                'type': 'object',
+                'properties': {
+                    'key': {'type': 'string'}
+                },
+                'additionalProperties': False
+            }
+        }
+
+    def reseed_build_entry(self, entry: Entry, config: dict, site: dict, passkey: dict, torrent_id: str) -> None:
+        key = passkey.get('key')
+        response = request('POST', urljoin(self.URL, self.GEN_DL_TOKEN), headers={'x-api-key': key},
+                           data={'id': torrent_id})
+        if response.status_code == 200:
+            entry['url'] = response.json().get('data')
