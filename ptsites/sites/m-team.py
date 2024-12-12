@@ -7,6 +7,7 @@ from requests import Response, request
 from typing import Final
 from urllib.parse import urljoin
 
+from ..base.request import NetworkState
 from ..base.entry import SignInEntry
 from ..base.reseed import Reseed
 from ..base.sign_in import check_final_state, SignState, Work
@@ -16,7 +17,7 @@ from ..utils.value_handler import handle_infinite
 
 
 class MainClass(NexusPHP, Reseed):
-    URL: Final = 'https://kp.m-team.cc/'
+    URL: Final = 'https://api.m-team.io/'
     PROFILE_URL = '/api/member/profile'
     MY_PEER_STATUS = '/api/tracker/myPeerStatus'
     GEN_DL_TOKEN = '/api/torrent/genDlToken'
@@ -79,12 +80,6 @@ class MainClass(NexusPHP, Reseed):
                         work: Work,
                         last_content: str = None,
                         ) -> Response | None:
-        # update_last_browse_response = self.request(entry, 'POST', urljoin(self.URL, '/api/member/updateLastBrowse'))
-        # if update_last_browse_response.status_code != 200 or update_last_browse_response.json().get(
-        #         'message') != 'SUCCESS':
-        #     entry.fail_with_prefix(f'update_last_browse failed!')
-        #     return
-
         response = super().sign_in_by_post(entry, config, work, last_content)
         response_json = response.json()
         last_browse = response_json.get('data').get('memberStatus').get('lastBrowse')
@@ -102,8 +97,10 @@ class MainClass(NexusPHP, Reseed):
                 **kwargs,
                 ) -> Response | None:
         key = entry.get('site_config').get('key')
-        return super().request(entry, 'POST', url, headers={'x-api-key': key})
-
+        try:
+            return super().request(entry, 'POST', url, headers={'x-api-key': key})
+        except Exception as e:
+            entry.fail_with_prefix(NetworkState.NETWORK_ERROR.value.format(url=url, error=e))
     def get_messages(self, entry: SignInEntry, config: dict) -> None:
         return
 
@@ -122,6 +119,9 @@ class MainClass(NexusPHP, Reseed):
     def reseed_build_entry(self, entry: Entry, config: dict, site: dict, passkey: dict, torrent_id: str) -> None:
         key = passkey.get('key')
         response = request('POST', urljoin(self.URL, self.GEN_DL_TOKEN), headers={'x-api-key': key},
-                           data={'id': torrent_id})
+                           data={'id': torrent_id},timeout=60)
         if response.status_code == 200:
-            entry['url'] = response.json().get('data')
+            if response.json().get('code') != 0:
+                entry.fail(response.json().get('message'))
+            else:
+                entry['url'] = response.json().get('data')
