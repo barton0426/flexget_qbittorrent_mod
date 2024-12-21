@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.12
 ENV PYTHONUNBUFFERED 1
 
 RUN \
@@ -21,7 +21,7 @@ RUN \
     pip wheel chardet && \
     pip wheel colorama
 
-FROM python
+FROM python:3.12
 LABEL maintainer="barton0426@msn.com" \
       org.label-schema.name="flexget"
 ENV PYTHONUNBUFFERED 1
