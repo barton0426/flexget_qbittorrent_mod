@@ -10,7 +10,7 @@ WORKDIR /wheels
 RUN \
     pip install -U pip && \
     pip wheel flexget && \
-    pip wheel python-telegram-bot==21.9 && \
+    pip wheel python-telegram-bot && \
     pip wheel baidu-aip && \
     pip wheel pillow && \
     pip wheel pandas && \
