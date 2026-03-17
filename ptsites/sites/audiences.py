@@ -20,7 +20,7 @@ class MainClass(VisitHR, ReseedCookie):
     }
 
     def sign_in_build_workflow(self, entry: SignInEntry, config: dict) -> list[Work]:
-        entry['extra_msg'] = f' 未签到: {urljoin(self.URL, "/attendance_new.php")}'
+        entry['extra_msg'] = f' 未签到: {urljoin(self.URL, "/attendance.php")}'
         return super().sign_in_build_workflow(entry, config)
 
     @property
