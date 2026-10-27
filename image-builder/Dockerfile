@@ -63,7 +63,7 @@ RUN \
     wget -O plugins/nexusphp.py https://raw.githubusercontent.com/Juszoe/flexget-nexusphp/master/nexusphp.py && \
     wget https://github.com/meatballgithub/flexget-autoremove-torrents/archive/refs/heads/master.zip && unzip master.zip && \
     cp -rf flexget-autoremove-torrents-master/* /plugins && rm master.zip && rm -rf flexget-autoremove-torrents-master && \
-    rm -rf /plugins/image-builder && rm /plugins/*.md && rm /plugins/*.yml && rm /plugins/.gitignore && rm /plugins/LICENSE && \
+    rm -rf /plugins/image-builder /plugins/tests /plugins/scripts /plugins/.github && rm /plugins/*.md && rm /plugins/*.yml /plugins/pyproject.toml && rm /plugins/.gitignore && rm /plugins/LICENSE && \
     apt purge -y wget unzip && apt autoremove -y && rm -rf /var/lib/apt/lists/*
 
 ENV FG_WEBUI_PASSWD Qwer@1357
