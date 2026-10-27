@@ -31,3 +31,12 @@ https://github.com/meatballgithub/flexget-autoremove-torrents
 
 https://github.com/Juszoe/flexget-nexusphp
 
+
+## 开发与测试
+
+站点实现位于 `ptsites/trackers/`，公共站点框架位于 `ptsites/schema/` 和 `ptsites/base/`。
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest
+```
